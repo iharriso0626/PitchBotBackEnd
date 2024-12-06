@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLaMA Text Generator</title>
+</head>
+<body>
+    <h1>LLaMA Text Generator</h1>
+    <textarea id="prompt" placeholder="Enter your prompt here"></textarea>
+    <button onclick="generateText()">Generate</button>
+    <p id="result"></p>
+
+    <script>
+        async function generateText() {
+            const prompt = document.getElementById('prompt').value;
+            const response = await fetch('http://localhost:3000/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ prompt })
+            });
+            const data = await response.json();
+            document.getElementById('result').innerText = data.text;
+        }
+    </script>
+</body>
+</html>
