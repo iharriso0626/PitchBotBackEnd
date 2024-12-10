@@ -29,53 +29,44 @@ def generate():
     data = request.get_json()
     if not data or 'prompt' not in data:
         return jsonify({'error': 'Invalid request, "prompt" field is required'}), 400
-    
-    prompt = data['prompt']
-    logging.debug(f"Received prompt: {prompt}")
 
-    # Initialize conversation history if not present
-    if 'conversation_history' not in session:
-        session['conversation_history'] = []
+    # Retrieve conversation history from session
+    conversation_history = session.get('conversation_history', [])
 
-    # Append the user's prompt to the conversation history
-    session['conversation_history'].append({'role': 'user', 'content': prompt})
+    # Add the new user message to the conversation history
+    user_message = data['prompt']
+    conversation_history.append({'role': 'user', 'content': user_message})
 
-    # Prepare the conversation history for the model
-    conversation_history = session['conversation_history']
+    # Prepare the payload for the model
+    payload = {
+        'messages': conversation_history
+    }
 
     try:
-        # Forward the conversation history to the Google Cloud model
-        response = requests.post(GOOGLE_CLOUD_MODEL_URL, json={'conversation': conversation_history})
-        
-        # Log and handle the response from the Google Cloud model
-        logging.debug(f"Google Cloud model response status: {response.status_code}")
+        # Make a request to the Google Cloud model
+        response = requests.post(GOOGLE_CLOUD_MODEL_URL, json=payload)
         response.raise_for_status()  # Raise error for HTTP errors
-        response_data = response.json()
-        logging.debug(f"Google Cloud model response content: {response_data}")
 
-        # Console log the entire JSON response for debugging
-        print("Google Cloud model response JSON:", response_data)
+        # Get the model's response
+        model_response = response.json()
+        logging.debug(f"Model response: {model_response}")
 
-        # Extract the generated text from the response
-        generated_text_list = response_data.get('generated_text', [])
-        if not generated_text_list:
-            logging.error(f"Unexpected response format: {response_data}")
-            return jsonify({'error': 'Unexpected response format'}), 500
+        bot_message = model_response.get('choices', [{}])[0].get('message', {}).get('content', '')
 
-        # Extract the content of the last response from the assistant
-        generated_text = generated_text_list[-1].get('content', '')
+        # Add the bot's response to the conversation history
+        conversation_history.append({'role': 'bot', 'content': bot_message})
 
-        # Append the model's response to the conversation history
-        session['conversation_history'].append({'role': 'model', 'content': generated_text})
+        # Save the updated conversation history in the session
+        session['conversation_history'] = conversation_history
 
-        return jsonify({'text': generated_text})
+        return jsonify({'response': bot_message})
 
     except requests.exceptions.RequestException as e:
-        logging.error(f"Google Cloud model request error: {e}")
-        return jsonify({'error': 'Failed to fetch response from Google Cloud model'}), 500
+        logging.error(f"Request error: {e}")
+        return jsonify({'error': 'Failed to generate response'}), 500
 
     except Exception as e:
-        logging.error(f"An error occurred: {e}")
+        logging.error(f"Error: {e}")
         return jsonify({'error': 'An internal error occurred'}), 500
 
 @app.route('/generate-audio-playht', methods=['POST'])
