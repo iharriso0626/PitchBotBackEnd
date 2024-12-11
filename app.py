@@ -13,7 +13,7 @@ CORS(app)  # Enable CORS for all routes
 logging.basicConfig(level=logging.DEBUG)
 
 # Google Cloud model URL for text generation (replace with actual URL)
-GOOGLE_CLOUD_MODEL_URL = "https://18df-35-240-225-50.ngrok-free.app/generate"
+GOOGLE_CLOUD_MODEL_URL = "https://2e1b-34-30-62-71.ngrok-free.app/generate"
 
 # Play.ht API configuration (replace with your actual API key and any secure storage)
 PLAYHT_API_URL = "https://api.play.ht/api/v2/tts/stream"
