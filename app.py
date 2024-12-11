@@ -13,7 +13,7 @@ CORS(app)  # Enable CORS for all routes
 logging.basicConfig(level=logging.DEBUG)
 
 # Google Cloud model URL for text generation (replace with actual URL)
-GOOGLE_CLOUD_MODEL_URL = "https://ff74-34-87-10-141.ngrok-free.app/generate"
+GOOGLE_CLOUD_MODEL_URL = "https://18df-35-240-225-50.ngrok-free.app/generate"
 
 # Play.ht API configuration (replace with your actual API key and any secure storage)
 PLAYHT_API_URL = "https://api.play.ht/api/v2/tts/stream"
@@ -59,7 +59,8 @@ def generate():
         # Save the updated conversation history in the session
         session['conversation_history'] = conversation_history
 
-        return jsonify({'response': bot_message})
+        return jsonify(model_response)
+
 
     except requests.exceptions.RequestException as e:
         logging.error(f"Request error: {e}")
